@@ -1,0 +1,75 @@
+---
+name: "MongoDB"
+tagline: "NoSQL document database"
+release_stage: pre-alpha
+
+# Descriptive text.
+description: |-
+  Kubestack helps deploy and run MongoDB on Kubernetes.
+  MongoDB is an open-source, document database designed for ease of development
+  and scaling.
+
+# List of highlights, must be multiple of 3, best to use 3 or 6
+highlights:
+  - icon: "power_settings_new"
+    title: "Push-button deploy"
+    text: |
+        Deploy a self-driving MongoDB replica set with just one kubectl
+        command on any Kubernetes cluster.
+  - icon: "update"
+    title: "Self-driving replica set"
+    text: |
+        Automated setup and replica set operations.
+        Full cluster life-cycle compatibility including node maintenance and
+        upgrades.
+        Self-healing recovery from pod or node failures.
+  - icon: "security"
+    title: "Secure defaults"
+    text: |
+        Production grade and secure default configuartion.
+        TLS encryption between replica members and clients.
+        Preconfigured authentication and role based permissions.
+  - icon: "storage"
+    title: "Safe and fast storage"
+    text: |
+        Persistent and high performance local storage using replication to
+        3, 5 or 7 distinct cluster nodes with pod-anti-affinity and
+        host volumes for storage.
+  - icon: "timeline"
+    title: "Built-in monitoring"
+    text: |
+        Built-in Prometheus metrics exporter for monitoring MongoDB.
+        Fully automatic integration with the
+        [Prometheus operator](/catalog/prometheus) or
+        easily integrated into your existing monitoring.
+  - icon: "help_outline"
+    title: "Expert support"
+    text: |
+        Direct support from engineer to engineer for deployment considerations,
+        planning and day-to-day operations like migrations and scaling.
+
+readme:
+  predeploy:
+      -
+        text: |
+            This is a pre-alpha release made available as a tech-preview.
+            This release does not include the operator. This limits
+            functionalities like scaling the replicas at runtime to not
+            add or remove members from the replica-set. Once released
+            the MongoDB operator will also operate existing replica-sets.
+        type: callout
+  postdeploy:
+      -
+        text: |
+            To connect to
+        type: text
+      -
+        type: code
+        text: |
+            kubectl -n {{ model.items[2].metadata.namespace }} exec -ti {{ model.items[2].metadata.name }}-0 -c mongod \
+                -- mongo --host localhost --ssl \
+                    --sslCAFile /etc/ssl/mongod/ca.pem \
+                    --sslPEMKeyFile /etc/ssl/mongod/mongod.pem
+
+maintainer_name: "Kubestack"
+maintainer_url: "https://www.kubestack.com/"

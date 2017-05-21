@@ -1,0 +1,27 @@
+---
+- hosts: localhost
+  connection: local
+  vars:
+    - namespace: "{{ lookup('env', 'NAMESPACE') }}"
+    - name: "{{ lookup('env', 'METADATA_NAME') }}"
+  tasks:
+    - name: Generate certificate and key
+      shell: "cfssl gencert \
+        -ca=/etc/ssl/mongod-ca/ca.pem \
+        -ca-key=/etc/ssl/mongod-ca/ca-key.pem \
+        -config=files/ca-config.json \
+        -profile=client-server \
+        -hostname=127.0.0.1,localhost,{{ name }},{{ name }}.{{ name[:-2] }}.{{ namespace }}.svc.cluster.local \
+        files/server-csr.json | cfssljson -bare /etc/ssl/mongod/server"
+      args:
+        creates: /etc/ssl/mongod/server.pem
+
+    - name: Concatenate certificate and key
+      shell: "cat /etc/ssl/mongod/server.pem /etc/ssl/mongod/server-key.pem > /etc/ssl/mongod/mongod.pem"
+      args:
+        creates: /etc/ssl/mongod/mongod.pem
+
+    - name: Include certificate authority
+      copy:
+        src: /etc/ssl/mongod-ca/ca.pem
+        dest: /etc/ssl/mongod/ca.pem

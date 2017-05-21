@@ -1,0 +1,9 @@
+rs.initiate({
+    '_id': 'rs0',
+    'version': 1,
+    'members': [
+{% for i in range(replicas | int) %}
+        {'_id': {{ i }}, 'host': '{{ cluster_name }}-{{ i }}.{{ cluster_name }}.{{ namespace }}.svc.cluster.local'},
+{% endfor %}
+    ]
+})

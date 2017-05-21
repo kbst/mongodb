@@ -1,0 +1,37 @@
+{
+	"variables": [
+		{
+			"path": "$.items[?(@.kind == 'Mongodb')].metadata.name",
+			"type": "text",
+			"prefix": "mongo-",
+			"title": "name your mongodb cluster"
+		},
+		{
+			"path": "$.items[?(@.kind == 'Mongodb')].metadata.namespace",
+			"type": "text",
+			"value": "default",
+			"title": "namespace to deploy cluster in"
+		},
+		{
+			"path": "$.items[?(@.kind == 'Mongodb')].spec.mongodb.replicas",
+			"type": "number",
+			"value": 3,
+			"min": 3,
+			"max": 9,
+			"step": 2,
+			"title": "# of replicas"
+		},
+		{
+			"path": "$.items[?(@.kind == 'Mongodb')].spec.mongodb.mongodb_limit_cpu",
+			"type": "text",
+			"value": "100m",
+			"title": "# of CPU cores"
+		},
+		{
+			"path": "$.items[?(@.kind == 'Mongodb')].spec.mongodb.mongodb_limit_memory",
+			"type": "text",
+			"value": "64Mi",
+			"title": "RAM per replica"
+		}
+	]
+}

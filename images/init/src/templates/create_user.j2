@@ -1,0 +1,19 @@
+admin = db.getSiblingDB("admin")
+admin.createUser(
+  {
+    user: "{{ lookup('env', 'MONGODB_ADMIN_USERNAME') }}",
+    pwd: "{{ lookup('env', 'MONGODB_ADMIN_PASSWORD') }}",
+    roles: [ { role: "root", db: "admin" } ]
+  }
+)
+admin.auth(
+  "{{ lookup('env', 'MONGODB_ADMIN_USERNAME') }}",
+  "{{ lookup('env', 'MONGODB_ADMIN_PASSWORD') }}"
+)
+admin.createUser(
+  {
+    user: "{{ lookup('env', 'MONGODB_MONITORING_USERNAME') }}",
+    pwd: "{{ lookup('env', 'MONGODB_MONITORING_PASSWORD') }}",
+    roles: [ { role: "clusterMonitor", db: "admin" } ]
+  }
+)
