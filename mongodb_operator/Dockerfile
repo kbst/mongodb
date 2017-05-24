@@ -4,6 +4,9 @@ RUN echo 'debconf debconf/frontend select Noninteractive' \
     && apt-get update -qq \
     && apt-get upgrade -y
 
+ADD https://pkg.cfssl.org/R1.2/cfssl_linux-amd64 /usr/local/bin/cfssl
+RUN chmod +x /usr/local/bin/cfssl
+
 ENV PYTHONUNBUFFERED 1
 
 RUN mkdir -p /opt/mongodb_operator

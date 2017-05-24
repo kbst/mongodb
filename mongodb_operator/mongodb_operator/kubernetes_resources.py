@@ -1,3 +1,5 @@
+import json
+
 from kubernetes import client
 
 
@@ -98,22 +100,22 @@ def get_statefulset_object(cluster_object):
     mongodb_port = client.V1ContainerPort(
         name='mongodb', container_port=27017, protocol='TCP')
     mongodb_tls_volumemount = client.V1VolumeMount(
-        name='{}-tls'.format(name),
+        name='mongo-tls',
         read_only=True,
         mount_path='/etc/ssl/mongod')
     mongodb_data_volumemount = client.V1VolumeMount(
-        name='{}-data'.format(name), read_only=False, mount_path='/data/db')
+        name='mongo-data', read_only=False, mount_path='/data/db')
     mongodb_resources = client.V1ResourceRequirements(
         limits={
             'cpu': mongodb_limit_cpu, 'memory': mongodb_limit_memory},
         requests={
             'cpu': mongodb_limit_cpu, 'memory': mongodb_limit_memory})
     mongodb_container = client.V1Container(
-        name='mongodb',
+        name='mongod',
         command=[
             'mongod',
             '--auth',
-            '--replSet', 'rs0',
+            '--replSet', name,
             '--sslMode', 'requireSSL',
             '--clusterAuthMode', 'x509',
             '--sslPEMKeyFile', '/etc/ssl/mongod/mongod.pem',
@@ -157,36 +159,10 @@ def get_statefulset_object(cluster_object):
     statefulset.spec.template.spec.containers = [
         mongodb_container, metrics_container]
 
-    tls_init_ca_volumemount = client.V1VolumeMount(
-        name='{}-ca'.format(name),
-        read_only=True,
-        mount_path='/etc/ssl/mongod-ca')
-    tls_init_container = client.V1Container(
-        name="tls-init",
-        image="quay.io/kubestack/mongodb-init:latest",
-        volume_mounts=[tls_init_ca_volumemount, mongodb_tls_volumemount],
-        env=[
-            client.V1EnvVar(
-                name='METADATA_NAME',
-                value_from=client.V1EnvVarSource(
-                    field_ref=client.V1ObjectFieldSelector(
-                        api_version='v1',
-                        field_path='metadata.name'))),
-            client.V1EnvVar(
-                name='NAMESPACE',
-                value_from=client.V1EnvVarSource(
-                    field_ref=client.V1ObjectFieldSelector(
-                        api_version='v1',
-                        field_path='metadata.namespace')))],
-        command=["ansible-playbook", "member-cert.yml"])
-
-    statefulset.spec.template.spec.init_containers = [tls_init_container]
-
-    ca_secret_name = '{}-ca'.format(name)
     ca_volume = client.V1Volume(
-        name=ca_secret_name,
+        name='mongo-ca',
         secret=client.V1SecretVolumeSource(
-            secret_name=ca_secret_name,
+            secret_name='{}-ca'.format(name),
             items=[
                 client.V1KeyToPath(
                     key='ca.pem',
@@ -195,11 +171,58 @@ def get_statefulset_object(cluster_object):
                     key='ca-key.pem',
                     path='ca-key.pem')]))
     tls_volume = client.V1Volume(
-        name='{}-tls'.format(name),
+        name='mongo-tls',
         empty_dir=client.V1EmptyDirVolumeSource())
     data_volume = client.V1Volume(
-        name='{}-data'.format(name),
+        name='mongo-data',
         empty_dir=client.V1EmptyDirVolumeSource())
     statefulset.spec.template.spec.volumes = [
         ca_volume, tls_volume, data_volume]
+
+    # Init container
+    # For now use annotation format for init_container to support K8s >= 1.5
+    statefulset.spec.template.metadata.annotations = {'pod.beta.kubernetes.io/init-containers': '[{"name": "cert-init","image": "quay.io/kubestack/mongodb-init:latest","volumeMounts": [{"readOnly": true,"mountPath": "/etc/ssl/mongod-ca","name": "mongo-ca"}, {"mountPath": "/etc/ssl/mongod","name": "mongo-tls"}],"env": [{"name": "METADATA_NAME","valueFrom": {"fieldRef": {"apiVersion": "v1","fieldPath": "metadata.name"}}}, {"name": "NAMESPACE","valueFrom": {"fieldRef": {"apiVersion": "v1","fieldPath": "metadata.namespace"}}}],"command": ["ansible-playbook","member-cert.yml"],"imagePullPolicy": "Always"}]'}
+
+    #tls_init_ca_volumemount = client.V1VolumeMount(
+    #    name='mongo-ca',
+    #    read_only=True,
+    #    mount_path='/etc/ssl/mongod-ca')
+    #tls_init_container = client.V1Container(
+    #    name="cert-init",
+    #    image="quay.io/kubestack/mongodb-init:latest",
+    #    volume_mounts=[tls_init_ca_volumemount, mongodb_tls_volumemount],
+    #    env=[
+    #        client.V1EnvVar(
+    #            name='METADATA_NAME',
+    #            value_from=client.V1EnvVarSource(
+    #                field_ref=client.V1ObjectFieldSelector(
+    #                    api_version='v1',
+    #                    field_path='metadata.name'))),
+    #        client.V1EnvVar(
+    #            name='NAMESPACE',
+    #            value_from=client.V1EnvVarSource(
+    #                field_ref=client.V1ObjectFieldSelector(
+    #                    api_version='v1',
+    #                    field_path='metadata.namespace')))],
+    #    command=["ansible-playbook", "member-cert.yml"])
+    #
+    # statefulset.spec.template.spec.init_containers = [tls_init_container]
+
     return statefulset
+
+
+def get_secret_object(cluster_object, name_suffix, string_data):
+    name = cluster_object['metadata']['name']
+    namespace = cluster_object['metadata']['namespace']
+
+    secret = client.V1Secret()
+
+    # Metadata
+    secret.metadata = client.V1ObjectMeta(
+        name='{}{}'.format(name, name_suffix),
+        namespace=namespace,
+        labels=get_default_labels(name=name))
+
+    secret.string_data = string_data
+
+    return secret
