@@ -341,10 +341,7 @@ def reap_statefulset(name, namespace):
     appsv1beta1api = client.AppsV1beta1Api()
 
     # First pause and scale down statefulset
-    body = {'spec': {
-                'replicas': 0,
-                'revision_history_limit': 0,
-                'paused': True}}
+    body = {'spec': {'replicas': 0}}
     try:
         appsv1beta1api.patch_namespaced_stateful_set(
             name, namespace, body)
@@ -376,6 +373,7 @@ def reap_statefulset(name, namespace):
                 logging.exception(e)
                 return False
         else:
+            print('REPLICAS:', statefulset.status.replicas)
             if statefulset.status.replicas == 0:
                 # Delete the statefulset
                 statefulset_deleted = delete_statefulset(name, namespace)
