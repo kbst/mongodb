@@ -7,7 +7,7 @@ from .mongodb_tpr_v1alpha1_api import MongoDBThirdPartyResourceV1Alpha1Api
 from .kubernetes_helpers import (create_admin_secret, create_monitoring_secret,
                                  create_certificate_authority_secret,
                                  create_client_certificate_secret,
-                                 create_service, delete_service,
+                                 delete_secret, create_service, delete_service,
                                  create_statefulset, reap_statefulset)
 from .mongodb_helpers import initiate_replicaset
 
@@ -62,9 +62,6 @@ def add(cluster_object):
     # Create statefulset
     create_statefulset(cluster_object)
 
-    # initiate replicaset
-    initiate_replicaset(cluster_object)
-
 
 def modify(cluster_object):
     logging.warning('UPDATE NOT IMPLEMENTED YET')
@@ -76,5 +73,11 @@ def delete(cluster_object):
     # Delete service
     delete_service(name, namespace)
 
-    # Gracefully delete deployment, replicaset and pods
+    # Gracefully delete statefulset and pods
     reap_statefulset(name, namespace)
+
+    # Delete cluster credentials
+    delete_secret('{}-ca'.format(name), namespace)
+    delete_secret('{}-client-certificate'.format(name), namespace)
+    delete_secret('{}-admin-credentials'.format(name), namespace)
+    delete_secret('{}-monitoring-credentials'.format(name), namespace)
