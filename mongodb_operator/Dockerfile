@@ -4,6 +4,9 @@ RUN echo 'debconf debconf/frontend select Noninteractive' \
     && apt-get update -qq \
     && apt-get upgrade -y
 
+ADD https://storage.googleapis.com/kubernetes-release/release/v1.6.2/bin/linux/amd64/kubectl /usr/local/bin/kubectl
+RUN chmod +x /usr/local/bin/kubectl
+
 ENV PYTHONUNBUFFERED 1
 
 RUN mkdir -p /opt/mongodb_operator

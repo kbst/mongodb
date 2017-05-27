@@ -3,8 +3,9 @@ from tempfile import NamedTemporaryFile
 
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
+import delegator
 
-from .kubernetes_helpers import read_client_certificate_secret
+from .kubernetes_helpers import read_secret
 
 def get_member_hostname(member_id, cluster_name, namespace, dns_suffix):
     return '{}-{}.{}.{}.{}'.format(
@@ -30,7 +31,8 @@ def initiate_replicaset(cluster_object, dns_suffix='svc.cluster.local'):
             '_id': _id,
             'host': _member_hostname})
 
-    client_certificate_secret = read_client_certificate_secret(cluster_object)
+    client_certificate_secret = read_secret(
+        '{}-client-certificate'.format(name), namespace)
 
     ca_pem_file = NamedTemporaryFile()
     ca_pem_file.write(
@@ -42,11 +44,15 @@ def initiate_replicaset(cluster_object, dns_suffix='svc.cluster.local'):
         b64decode(client_certificate_secret.data['mongod.pem']))
     mongod_pem_file.flush()
 
-    first_member = get_member_hostname(0, name, namespace, dns_suffix)
-    mongo_uri = 'mongodb://{}:27017'.format(
-        first_member)
+    # MongoDB rs.initiate requires localhost connection
+    # we use kubectl port-forward to achieve this
+    pod_name = '{}-0'.format(name)
+    cmd = 'kubectl -n {} port-forward {} {}:27017'.format(
+        namespace, pod_name, 27017)
+    port_forward = delegator.run(cmd, block=False)
+
     mc = MongoClient(
-        mongo_uri,
+        'mongodb://localhost:27017',
         ssl=True,
         ssl_ca_certs=ca_pem_file.name,
         ssl_certfile=mongod_pem_file.name)
@@ -57,3 +63,4 @@ def initiate_replicaset(cluster_object, dns_suffix='svc.cluster.local'):
 
     ca_pem_file.close()
     mongod_pem_file.close()
+    port_forward.kill()
