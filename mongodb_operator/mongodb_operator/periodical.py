@@ -164,14 +164,16 @@ def collect_garbage():
     else:
         # Check if service belongs to an existing cluster
         for secret in secret_list.items:
-            name = secret.metadata.name
+            cluster_name = secret.metadata.labels['cluster']
+            secret_name = secret.metadata.name
             namespace = secret.metadata.namespace
 
             try:
-                mongodb_tpr_api.read_namespaced_mongodb(name, namespace)
+                mongodb_tpr_api.read_namespaced_mongodb(
+                    cluster_name, namespace)
             except client.rest.ApiException as e:
                 if e.status == 404:
                     # Delete service
-                    delete_secret(name, namespace)
+                    delete_secret(secret_name, namespace)
                 else:
                     logging.exception(e)
