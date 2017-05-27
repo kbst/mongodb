@@ -113,24 +113,6 @@ def create_certificate_authority_secret(cluster_object):
         return secret
 
 
-def read_certificate_authority_secret(cluster_object):
-    name = '{}-ca'.format(cluster_object['metadata']['name'])
-    namespace = cluster_object['metadata']['namespace']
-    v1 = client.CoreV1Api()
-    try:
-        secret = v1.read_namespaced_secret(name, namespace)
-    except client.rest.ApiException as e:
-        if e.status == 404:
-            # Secret already exists
-            logging.debug('secret/{} in ns/{} does not exist'.format(
-                name, namespace))
-        else:
-            logging.exception(e)
-        return False
-    else:
-        return secret
-
-
 def get_client_certificate(name, namespace, ca_pem, ca_key_pem):
     common_name = '{}-client'.format(name)
     client_csr = {
@@ -185,7 +167,7 @@ def create_client_certificate_secret(cluster_object):
     name = cluster_object['metadata']['name']
     namespace = cluster_object['metadata']['namespace']
     v1 = client.CoreV1Api()
-    ca_secret = read_certificate_authority_secret(cluster_object)
+    ca_secret = read_secret('{}-ca'.format(name), namespace)
     ca_pem = b64decode(ca_secret.data['ca.pem'])
     ca_key_pem = b64decode(ca_secret.data['ca-key.pem'])
     mongod_pem, csr_pem = get_client_certificate(
@@ -211,15 +193,12 @@ def create_client_certificate_secret(cluster_object):
         return secret
 
 
-def read_client_certificate_secret(cluster_object):
-    name = '{}-client-certificate'.format(cluster_object['metadata']['name'])
-    namespace = cluster_object['metadata']['namespace']
+def read_secret(name, namespace):
     v1 = client.CoreV1Api()
     try:
         secret = v1.read_namespaced_secret(name, namespace)
     except client.rest.ApiException as e:
         if e.status == 404:
-            # Secret already exists
             logging.debug('secret/{} in ns/{} does not exist'.format(
                 name, namespace))
         else:
@@ -227,6 +206,20 @@ def read_client_certificate_secret(cluster_object):
         return False
     else:
         return secret
+
+
+def delete_secret(name, namespace, delete_options=None):
+    v1 = client.CoreV1Api()
+    if not delete_options:
+        delete_options = client.V1DeleteOptions()
+    try:
+        v1.delete_namespaced_secret(name, namespace, delete_options)
+    except client.rest.ApiException as e:
+        logging.exception(e)
+        return False
+    else:
+        logging.info('deleted secret/{} from ns/{}'.format(name, namespace))
+        return True
 
 
 def create_service(cluster_object):
@@ -359,6 +352,7 @@ def reap_statefulset(name, namespace):
     # Gracefully wait until scaled down, finally delete StatefulSet
     statefulset_deleted = False
     for i in range(5):
+        print('RETRY:', i)
         # A little back-off before the next try
         sleep(i * 2)
 
