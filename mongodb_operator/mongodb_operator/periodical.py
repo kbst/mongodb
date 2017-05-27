@@ -7,7 +7,8 @@ from .mongodb_tpr_v1alpha1_api import MongoDBThirdPartyResourceV1Alpha1Api
 from .kubernetes_resources import get_default_label_selector
 from .kubernetes_helpers import (create_service, update_service,
                                  delete_service, create_statefulset,
-                                 update_statefulset, reap_statefulset)
+                                 update_statefulset, reap_statefulset,
+                                 delete_secret)
 
 
 def periodical_check(shutting_down, sleep_seconds):
@@ -84,9 +85,10 @@ def check_existing():
                     # Store latest version in cache
                     cache_version(updated_service)
 
-        # Check deployment exists
+        # Check statefulset exists
         try:
-            statefulset = appsv1beta1api.read_namespaced_stateful_set(name, namespace)
+            statefulset = appsv1beta1api.read_namespaced_stateful_set(
+                name, namespace)
         except client.rest.ApiException as e:
             if e.status == 404:
                 # Create missing deployment
@@ -108,7 +110,7 @@ def check_existing():
 def collect_garbage():
     mongodb_tpr_api = MongoDBThirdPartyResourceV1Alpha1Api()
     v1 = client.CoreV1Api()
-    v1beta1api = client.ExtensionsV1beta1Api()
+    appsv1beta1api = client.AppsV1beta1Api()
     label_selector = get_default_label_selector()
 
     # Find all services that match our labels
@@ -132,23 +134,44 @@ def collect_garbage():
                 else:
                     logging.exception(e)
 
-    # Find all deployments that match our labels
+    # Find all statefulsets that match our labels
     try:
-        deployment_list = v1beta1api.list_deployment_for_all_namespaces(
+        statefulset_list = appsv1beta1api.list_stateful_set_for_all_namespaces(
             label_selector=label_selector)
     except client.rest.ApiException as e:
         logging.exception(e)
     else:
         # Check if deployment belongs to an existing cluster
-        for deployment in deployment_list.items:
-            name = deployment.metadata.name
-            namespace = deployment.metadata.namespace
+        for statefulset in statefulset_list.items:
+            name = statefulset.metadata.name
+            namespace = statefulset.metadata.namespace
 
             try:
                 mongodb_tpr_api.read_namespaced_mongodb(name, namespace)
             except client.rest.ApiException as e:
                 if e.status == 404:
                     # Gracefully delete deployment, replicaset and pods
-                    reap_deployment(name, namespace)
+                    reap_statefulset(name, namespace)
+                else:
+                    logging.exception(e)
+
+    # Find all secrets that match our labels
+    try:
+        secret_list = v1.list_secret_for_all_namespaces(
+            label_selector=label_selector)
+    except client.rest.ApiException as e:
+        logging.exception(e)
+    else:
+        # Check if service belongs to an existing cluster
+        for secret in secret_list.items:
+            name = secret.metadata.name
+            namespace = secret.metadata.namespace
+
+            try:
+                mongodb_tpr_api.read_namespaced_mongodb(name, namespace)
+            except client.rest.ApiException as e:
+                if e.status == 404:
+                    # Delete service
+                    delete_secret(name, namespace)
                 else:
                     logging.exception(e)
