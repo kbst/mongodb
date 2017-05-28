@@ -44,7 +44,7 @@
 				},
 				"spec": {
 					"containers": [{
-						"image": "quay.io/kubestack/mongodb-operator:dev",
+						"image": "quay.io/kubestack/mongodb-operator:latest",
 						"name": "mongodb-operator",
 						"resources": {
 							"limits": {
