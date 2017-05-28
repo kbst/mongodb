@@ -1,7 +1,7 @@
 ---
 name: "MongoDB"
 tagline: "NoSQL document database"
-release_stage: pre-alpha
+release_stage: alpha
 
 # Descriptive text.
 description: |-
@@ -52,11 +52,9 @@ readme:
   predeploy:
       -
         text: |
-            This is a pre-alpha release made available as a tech-preview.
-            This release does not include the operator. This limits
-            functionalities like scaling the replicas at runtime to not
-            add or remove members from the replica-set. Once released
-            the MongoDB operator will also operate existing replica-sets.
+            This is a alpha release made available as a tech-preview.
+            Scaling the stateful set does not yet add or remove replica set
+            members.
         type: callout
   postdeploy:
       -
