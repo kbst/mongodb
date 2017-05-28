@@ -33,7 +33,7 @@ highlights:
     title: "Safe and fast storage"
     text: |
         Persistent and high performance local storage using replication to
-        3, 5 or 7 distinct cluster nodes with pod-anti-affinity and
+        3, 5, 7 or 9 distinct cluster nodes with pod-anti-affinity and
         host volumes for storage.
   - icon: "timeline"
     title: "Built-in monitoring"
@@ -70,4 +70,4 @@ readme:
                     --sslPEMKeyFile /etc/ssl/mongod/mongod.pem
 
 maintainer_name: "Kubestack"
-maintainer_url: "https://www.kubestack.com/"
+maintainer_url: "https://github.com/kbst/mongodb"
