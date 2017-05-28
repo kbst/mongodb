@@ -8,11 +8,15 @@
             "version": "==2017.4.17",
             "hash": "sha256:f4318671072f030a33c7ca6acaef720ddd50ff124d1388e50c1bda4cbd6d7010"
         },
-        "pyasn1": {
-            "version": "==0.2.3",
-            "hash": "sha256:0439b9bd518418260c2641a571f0e07fce4370cab13b68f19b5e023306c03cad"
+        "pexpect": {
+            "version": "==4.2.1",
+            "hash": "sha256:f853b52afaf3b064d29854771e2db509ef80392509bde2dd7a6ecf2dfc3f0018"
         },
         "kubernetes": "==2.0",
+        "delegator.py": {
+            "version": "==0.0.10",
+            "hash": "sha256:e5c35cf8d20584d6ae4e805eb4023700599b0d2a439ed24db6f976bfc8c94976"
+        },
         "ipaddress": {
             "version": "==1.0.18",
             "hash": "sha256:5d8534c8e185f2d8a1fda1ef73f2c8f4b23264e8e30063feeb9511d492a413e1"
@@ -29,9 +33,17 @@
             "version": "==3.4.2",
             "hash": "sha256:43f682fea81c452c98d09fc316aae12de6d30c4b5c84226642cf8f8fd1c93abd"
         },
+        "ptyprocess": {
+            "version": "==0.5.1",
+            "hash": "sha256:464cb76f7a7122743dd25507650db89cd447c51f38e4671602b3eaa2e38e05ae"
+        },
         "packaging": {
             "version": "==16.8",
             "hash": "sha256:99276dc6e3a7851f32027a68f1095cd3f77c148091b092ea867a351811cfe388"
+        },
+        "pyasn1": {
+            "version": "==0.2.3",
+            "hash": "sha256:0439b9bd518418260c2641a571f0e07fce4370cab13b68f19b5e023306c03cad"
         },
         "pyasn1-modules": {
             "version": "==0.0.8",
@@ -101,7 +113,7 @@
         ],
         "requires": {},
         "hash": {
-            "sha256": "1184a180bcabab855c4992241d61387fd0c331ec4fb486bfcec10604a7360d5a"
+            "sha256": "7b03f2336b4f56e0a4ef1d19acb75ee1031cb20c4d2ca6a9abc04e81f81a147a"
         }
     }
 }
