@@ -9,3 +9,5 @@ flake8 = "*"
 [packages]
 kubernetes = "==2.0"
 docopt = "*"
+"delegator.py" = "*"
+xkcdpass = "*"

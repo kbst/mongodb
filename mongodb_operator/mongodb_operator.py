@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
 """
-Memcached Operator.
+MongoDB Operator.
 
-Usage: memcached_operator.py [options] [--help]
+Usage: mongodb_operator.py [options] [--help]
 
 Periodic Check Options:
   --periodic-check-interval N   Check every N seconds [default: 25].
@@ -34,8 +34,7 @@ class MongoDBOperator(object):
 
     def __init__(self):
         self.shutting_down = threading.Event()
-        #config.load_incluster_config()
-        config.load_kube_config()
+        config.load_incluster_config()
 
         self.periodic_check_thread = threading.Thread(
             name='PeriodicCheck',

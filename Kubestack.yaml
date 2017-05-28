@@ -1,13 +1,13 @@
 ---
 name: "MongoDB"
 tagline: "NoSQL document database"
-release_stage: pre-alpha
+release_stage: alpha
 
 # Descriptive text.
 description: |-
-  Kubestack helps deploy and run MongoDB on Kubernetes.
-  MongoDB is an open-source, document database designed for ease of development
-  and scaling.
+  The MongoDB operator provides a managed service like experience for MongoDB
+  replica sets on any Kubernetes cluster. MongoDB is an open-source, document
+  database designed for ease of development and scaling.
 
 # List of highlights, must be multiple of 3, best to use 3 or 6
 highlights:
@@ -33,7 +33,7 @@ highlights:
     title: "Safe and fast storage"
     text: |
         Persistent and high performance local storage using replication to
-        3, 5 or 7 distinct cluster nodes with pod-anti-affinity and
+        3, 5, 7 or 9 distinct cluster nodes with pod-anti-affinity and
         host volumes for storage.
   - icon: "timeline"
     title: "Built-in monitoring"
@@ -52,11 +52,9 @@ readme:
   predeploy:
       -
         text: |
-            This is a pre-alpha release made available as a tech-preview.
-            This release does not include the operator. This limits
-            functionalities like scaling the replicas at runtime to not
-            add or remove members from the replica-set. Once released
-            the MongoDB operator will also operate existing replica-sets.
+            This is a alpha release made available as a tech-preview.
+            Scaling the stateful set does not yet add or remove replica set
+            members.
         type: callout
   postdeploy:
       -
@@ -66,10 +64,10 @@ readme:
       -
         type: code
         text: |
-            kubectl -n {{ model.items[2].metadata.namespace }} exec -ti {{ model.items[2].metadata.name }}-0 -c mongod \
+            kubectl -n {{ model.items[3].metadata.namespace }} exec -ti {{ model.items[3].metadata.name }}-0 -c mongod \
                 -- mongo --host localhost --ssl \
                     --sslCAFile /etc/ssl/mongod/ca.pem \
                     --sslPEMKeyFile /etc/ssl/mongod/mongod.pem
 
 maintainer_name: "Kubestack"
-maintainer_url: "https://www.kubestack.com/"
+maintainer_url: "https://github.com/kbst/mongodb"

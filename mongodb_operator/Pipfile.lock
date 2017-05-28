@@ -1,26 +1,6 @@
 {
     "default": {
-        "pyyaml": {
-            "version": "==3.12",
-            "hash": "sha256:592766c6303207a20efc445587778322d7f73b161bd994f227adaa341ba212ab"
-        },
-        "certifi": {
-            "version": "==2017.4.17",
-            "hash": "sha256:f4318671072f030a33c7ca6acaef720ddd50ff124d1388e50c1bda4cbd6d7010"
-        },
-        "pyasn1": {
-            "version": "==0.2.3",
-            "hash": "sha256:0439b9bd518418260c2641a571f0e07fce4370cab13b68f19b5e023306c03cad"
-        },
         "kubernetes": "==2.0",
-        "ipaddress": {
-            "version": "==1.0.18",
-            "hash": "sha256:5d8534c8e185f2d8a1fda1ef73f2c8f4b23264e8e30063feeb9511d492a413e1"
-        },
-        "six": {
-            "version": "==1.10.0",
-            "hash": "sha256:0ff78c403d9bccf5a425a6d31a12aa6b47f1c21ca4dc2573a7e2f32a97335eb1"
-        },
         "urllib3": {
             "version": "==1.21.1",
             "hash": "sha256:8ed6d5c1ff9d6ba84677310060d6a3a78ca3072ce0684cb3c645023009c114b1"
@@ -33,17 +13,9 @@
             "version": "==16.8",
             "hash": "sha256:99276dc6e3a7851f32027a68f1095cd3f77c148091b092ea867a351811cfe388"
         },
-        "pyasn1-modules": {
-            "version": "==0.0.8",
-            "hash": "sha256:6c955210b86fcff3420957072280560ddaf183aa761fb76240c20c322e01021d"
-        },
         "httplib2": {
             "version": "==0.10.3",
             "hash": "sha256:e404d3b7bd86c1bc931906098e7c1305d6a3a6dcef141b8bb1059903abb3ceeb"
-        },
-        "setuptools": {
-            "version": "==35.0.2",
-            "hash": "sha256:19d753940f8cdbee7548da318f8b56159aead279ef811a6efc8b8a33d89c86a4"
         },
         "python-dateutil": {
             "version": "==2.6.0",
@@ -53,17 +25,61 @@
             "version": "==2.2.0",
             "hash": "sha256:fee43f17a9c4087e7ed1605bd6df994c6173c1e977d7ade7b651292fab2bd010"
         },
+        "ipaddress": {
+            "version": "==1.0.18",
+            "hash": "sha256:5d8534c8e185f2d8a1fda1ef73f2c8f4b23264e8e30063feeb9511d492a413e1"
+        },
+        "xkcdpass": {
+            "version": "==1.10.0",
+            "hash": "sha256:07bc971034938ef00fe729d8aa6f900954c7c5ddb9bdc0d33f4582815530a764"
+        },
+        "appdirs": {
+            "version": "==1.4.3",
+            "hash": "sha256:d8b24664561d0d34ddfaec54636d502d7cea6e29c3eaf68f3df6180863e2166e"
+        },
+        "pyyaml": {
+            "version": "==3.12",
+            "hash": "sha256:592766c6303207a20efc445587778322d7f73b161bd994f227adaa341ba212ab"
+        },
         "docopt": {
             "version": "==0.6.2",
             "hash": "sha256:49b3a825280bd66b3aa83585ef59c4a8c82f2c8a522dbe754a8bc8d08c85c491"
+        },
+        "pexpect": {
+            "version": "==4.2.1",
+            "hash": "sha256:f853b52afaf3b064d29854771e2db509ef80392509bde2dd7a6ecf2dfc3f0018"
+        },
+        "delegator.py": {
+            "version": "==0.0.10",
+            "hash": "sha256:e5c35cf8d20584d6ae4e805eb4023700599b0d2a439ed24db6f976bfc8c94976"
+        },
+        "pyasn1-modules": {
+            "version": "==0.0.8",
+            "hash": "sha256:6c955210b86fcff3420957072280560ddaf183aa761fb76240c20c322e01021d"
+        },
+        "six": {
+            "version": "==1.10.0",
+            "hash": "sha256:0ff78c403d9bccf5a425a6d31a12aa6b47f1c21ca4dc2573a7e2f32a97335eb1"
+        },
+        "ptyprocess": {
+            "version": "==0.5.1",
+            "hash": "sha256:464cb76f7a7122743dd25507650db89cd447c51f38e4671602b3eaa2e38e05ae"
+        },
+        "setuptools": {
+            "version": "==35.0.2",
+            "hash": "sha256:19d753940f8cdbee7548da318f8b56159aead279ef811a6efc8b8a33d89c86a4"
         },
         "oauth2client": {
             "version": "==4.1.0",
             "hash": "sha256:42868bb5b93172ab73413314c821926ba86f92be99051aa0f76d39346689dcdb"
         },
-        "appdirs": {
-            "version": "==1.4.3",
-            "hash": "sha256:d8b24664561d0d34ddfaec54636d502d7cea6e29c3eaf68f3df6180863e2166e"
+        "certifi": {
+            "version": "==2017.4.17",
+            "hash": "sha256:f4318671072f030a33c7ca6acaef720ddd50ff124d1388e50c1bda4cbd6d7010"
+        },
+        "pyasn1": {
+            "version": "==0.2.3",
+            "hash": "sha256:0439b9bd518418260c2641a571f0e07fce4370cab13b68f19b5e023306c03cad"
         },
         "websocket-client": {
             "version": "==0.40.0",
@@ -101,7 +117,7 @@
         ],
         "requires": {},
         "hash": {
-            "sha256": "1184a180bcabab855c4992241d61387fd0c331ec4fb486bfcec10604a7360d5a"
+            "sha256": "41f9c9b3ed5ad01e89e46672154d77415917ff7a9bdd1f72c7a2649b6694c26f"
         }
     }
 }

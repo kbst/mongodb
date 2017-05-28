@@ -4,8 +4,11 @@ from time import sleep
 from kubernetes import watch
 
 from .mongodb_tpr_v1alpha1_api import MongoDBThirdPartyResourceV1Alpha1Api
-from .kubernetes_helpers import (create_service, delete_service,
-                                 create_statefulset, reap_deployment)
+from .kubernetes_helpers import (create_admin_secret, create_monitoring_secret,
+                                 create_certificate_authority_secret,
+                                 create_client_certificate_secret,
+                                 delete_secret, create_service, delete_service,
+                                 create_statefulset, reap_statefulset)
 
 
 def event_listener(shutting_down, timeout_seconds):
@@ -46,10 +49,16 @@ def event_switch(event):
 
 
 def add(cluster_object):
+    # Cluster credentials
+    create_certificate_authority_secret(cluster_object)
+    create_client_certificate_secret(cluster_object)
+    create_admin_secret(cluster_object)
+    create_monitoring_secret(cluster_object)
+
     # Create service
     create_service(cluster_object)
 
-    # Create deployment
+    # Create statefulset
     create_statefulset(cluster_object)
 
 
@@ -63,5 +72,11 @@ def delete(cluster_object):
     # Delete service
     delete_service(name, namespace)
 
-    # Gracefully delete deployment, replicaset and pods
-    reap_deployment(name, namespace)
+    # Gracefully delete statefulset and pods
+    reap_statefulset(name, namespace)
+
+    # Delete cluster credentials
+    delete_secret('{}-ca'.format(name), namespace)
+    delete_secret('{}-client-certificate'.format(name), namespace)
+    delete_secret('{}-admin-credentials'.format(name), namespace)
+    delete_secret('{}-monitoring-credentials'.format(name), namespace)
