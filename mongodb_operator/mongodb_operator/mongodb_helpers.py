@@ -60,14 +60,15 @@ def initiate_replicaset(cluster_object, dns_suffix=DNS_SUFFIX):
     except KeyError:
         replicas = 3
 
-    _rs_config={
+    _rs_config = {
         '_id': name,
         'version': 1,
         'members': []
     }
 
     for _id in range(replicas):
-        _member_hostname = get_member_hostname(_id, name, namespace, dns_suffix)
+        _member_hostname = get_member_hostname(
+            _id, name, namespace, dns_suffix)
         _rs_config['members'].append({
             '_id': _id,
             'host': _member_hostname})
@@ -95,11 +96,12 @@ def initiate_replicaset(cluster_object, dns_suffix=DNS_SUFFIX):
             name, namespace))
     elif '"ok" : 0' in exec_resp and \
          '"codeName" : "NodeNotFound"' in exec_resp:
-         logging.info('waiting for {} {} replicaset members in ns/{}'.format(
+        logging.info('waiting for {} {} replicaset members in ns/{}'.format(
             replicas, name, namespace))
     else:
         logging.error('error initializing replicaset {} in ns/{}\n{}'.format(
             name, namespace, exec_resp))
+
 
 def create_users(cluster_object):
     v1 = client.CoreV1Api()

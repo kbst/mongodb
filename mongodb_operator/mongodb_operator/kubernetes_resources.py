@@ -1,5 +1,3 @@
-import json
-
 from kubernetes import client
 
 
@@ -150,7 +148,7 @@ def get_statefulset_object(cluster_object):
         command=[
             '/bin/sh',
             '-c',
-            '/bin/mongodb_exporter --mongodb.uri mongodb://${MONGODB_MONITORING_USERNAME}:${MONGODB_MONITORING_PASSWORD}@127.0.0.1:27017/admin --mongodb.tls-cert /etc/ssl/mongod/mongod.pem --mongodb.tls-ca /etc/ssl/mongod/ca.pem'],
+            '/bin/mongodb_exporter --mongodb.uri mongodb://${MONGODB_MONITORING_USERNAME}:${MONGODB_MONITORING_PASSWORD}@127.0.0.1:27017/admin --mongodb.tls-cert /etc/ssl/mongod/mongod.pem --mongodb.tls-ca /etc/ssl/mongod/ca.pem'],  # flake8: noqa
         ports=[metrics_port],
         resources=metrics_resources,
         volume_mounts=[mongodb_tls_volumemount],
@@ -181,30 +179,30 @@ def get_statefulset_object(cluster_object):
 
     # Init container
     # For now use annotation format for init_container to support K8s >= 1.5
-    statefulset.spec.template.metadata.annotations = {'pod.beta.kubernetes.io/init-containers': '[{"name": "cert-init","image": "quay.io/kubestack/mongodb-init:latest","volumeMounts": [{"readOnly": true,"mountPath": "/etc/ssl/mongod-ca","name": "mongo-ca"}, {"mountPath": "/etc/ssl/mongod","name": "mongo-tls"}],"env": [{"name": "METADATA_NAME","valueFrom": {"fieldRef": {"apiVersion": "v1","fieldPath": "metadata.name"}}}, {"name": "NAMESPACE","valueFrom": {"fieldRef": {"apiVersion": "v1","fieldPath": "metadata.namespace"}}}],"command": ["ansible-playbook","member-cert.yml"],"imagePullPolicy": "Always"}]'}
+    statefulset.spec.template.metadata.annotations = {'pod.beta.kubernetes.io/init-containers': '[{"name": "cert-init","image": "quay.io/kubestack/mongodb-init:latest","volumeMounts": [{"readOnly": true,"mountPath": "/etc/ssl/mongod-ca","name": "mongo-ca"}, {"mountPath": "/etc/ssl/mongod","name": "mongo-tls"}],"env": [{"name": "METADATA_NAME","valueFrom": {"fieldRef": {"apiVersion": "v1","fieldPath": "metadata.name"}}}, {"name": "NAMESPACE","valueFrom": {"fieldRef": {"apiVersion": "v1","fieldPath": "metadata.namespace"}}}],"command": ["ansible-playbook","member-cert.yml"],"imagePullPolicy": "Always"}]'}  # flake8: noqa
 
-    #tls_init_ca_volumemount = client.V1VolumeMount(
-    #    name='mongo-ca',
-    #    read_only=True,
-    #    mount_path='/etc/ssl/mongod-ca')
-    #tls_init_container = client.V1Container(
-    #    name="cert-init",
-    #    image="quay.io/kubestack/mongodb-init:latest",
-    #    volume_mounts=[tls_init_ca_volumemount, mongodb_tls_volumemount],
-    #    env=[
-    #        client.V1EnvVar(
-    #            name='METADATA_NAME',
-    #            value_from=client.V1EnvVarSource(
-    #                field_ref=client.V1ObjectFieldSelector(
-    #                    api_version='v1',
-    #                    field_path='metadata.name'))),
-    #        client.V1EnvVar(
-    #            name='NAMESPACE',
-    #            value_from=client.V1EnvVarSource(
-    #                field_ref=client.V1ObjectFieldSelector(
-    #                    api_version='v1',
-    #                    field_path='metadata.namespace')))],
-    #    command=["ansible-playbook", "member-cert.yml"])
+    # tls_init_ca_volumemount = client.V1VolumeMount(
+    #     name='mongo-ca',
+    #     read_only=True,
+    #     mount_path='/etc/ssl/mongod-ca')
+    # tls_init_container = client.V1Container(
+    #     name="cert-init",
+    #     image="quay.io/kubestack/mongodb-init:latest",
+    #     volume_mounts=[tls_init_ca_volumemount, mongodb_tls_volumemount],
+    #     env=[
+    #         client.V1EnvVar(
+    #             name='METADATA_NAME',
+    #             value_from=client.V1EnvVarSource(
+    #                 field_ref=client.V1ObjectFieldSelector(
+    #                     api_version='v1',
+    #                     field_path='metadata.name'))),
+    #         client.V1EnvVar(
+    #             name='NAMESPACE',
+    #             value_from=client.V1EnvVarSource(
+    #                 field_ref=client.V1ObjectFieldSelector(
+    #                     api_version='v1',
+    #                     field_path='metadata.namespace')))],
+    #     command=["ansible-playbook", "member-cert.yml"])
     #
     # statefulset.spec.template.spec.init_containers = [tls_init_container]
 

@@ -1,6 +1,5 @@
 import logging
 import json
-from time import sleep
 from tempfile import NamedTemporaryFile
 from base64 import b64decode
 
@@ -37,13 +36,15 @@ def create_admin_secret(cluster_object):
     except client.rest.ApiException as e:
         if e.status == 409:
             # Secret already exists
-            logging.debug('secret/{}-admin-credentials in ns/{} already exists'.format(
-                name, namespace))
+            logging.debug(
+                'secret/{}-admin-credentials in ns/{} already exists'.format(
+                    name, namespace))
         else:
             logging.exception(e)
         return False
     else:
-        logging.info('created secret/{}-admin-credentials in ns/{}'.format(name, namespace))
+        logging.info('created secret/{}-admin-credentials in ns/{}'.format(
+            name, namespace))
         return secret
 
 
@@ -65,27 +66,28 @@ def create_monitoring_secret(cluster_object):
     except client.rest.ApiException as e:
         if e.status == 409:
             # Secret already exists
-            logging.debug('secret/{}-monitoring-credentials in ns/{} already exists'.format(
-                name, namespace))
+            msg = 'secret/{}-monitoring-credentials in ns/{} already exists'
+            logging.debug(msg.format(name, namespace))
         else:
             logging.exception(e)
         return False
     else:
-        logging.info('created secret/{}-monitoring-credentials in ns/{}'.format(name, namespace))
+        msg = 'created secret/{}-monitoring-credentials in ns/{}'
+        logging.info(msg.format(name, namespace))
         return secret
 
 
 def get_certificate_authority(name, namespace, suffix='svc.cluster.local'):
     common_name = '{}.{}.{}'.format(name, namespace, suffix)
     ca_csr = {
-    	'CN': common_name,
-    	'key': {
-    		'algo': 'rsa',
-    		'size': 2048
-    	},
-    	'names': [{
-    		'O': common_name
-    	}]}
+        'CN': common_name,
+        'key': {
+            'algo': 'rsa',
+            'size': 2048
+        },
+        'names': [{
+            'O': common_name
+        }]}
 
     with NamedTemporaryFile() as ca_csr_file:
         ca_csr_json = json.dumps(ca_csr).encode('utf-8')
@@ -133,15 +135,15 @@ def create_certificate_authority_secret(cluster_object):
 def get_client_certificate(name, namespace, ca_pem, ca_key_pem):
     common_name = '{}-client'.format(name)
     client_csr = {
-    	'CN': common_name,
-    	'hosts': [],
-    	'key': {
-    		'algo': 'rsa',
-    		'size': 2048
-    	},
-    	'names': [{
-    		'O': common_name
-    	}]
+        'CN': common_name,
+        'hosts': [],
+        'key': {
+            'algo': 'rsa',
+            'size': 2048
+        },
+        'names': [{
+            'O': common_name
+        }]
     }
 
     ca_file = NamedTemporaryFile(delete=False)
@@ -176,7 +178,7 @@ def get_client_certificate(name, namespace, ca_pem, ca_key_pem):
 
     r = json.loads(c.out)
 
-    mongod_pem =  r['cert'] + r['key']
+    mongod_pem = r['cert'] + r['key']
     return mongod_pem, r['csr']
 
 
@@ -364,7 +366,7 @@ def reap_statefulset(name, namespace):
     except client.rest.ApiException as e:
         if e.status == 404:
             # StatefulSet does not exist, nothing to gracefully delete
-            msg = 'can not gracefully delete nonexistent statefulset/{} from ns/{}'
+            msg = 'can not delete nonexistent statefulset/{} from ns/{}'
             logging.debug(msg.format(name, namespace))
             return True
         else:

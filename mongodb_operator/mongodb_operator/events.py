@@ -9,7 +9,6 @@ from .kubernetes_helpers import (create_admin_secret, create_monitoring_secret,
                                  create_client_certificate_secret,
                                  delete_secret, create_service, delete_service,
                                  create_statefulset, reap_statefulset)
-from .mongodb_helpers import initiate_replicaset
 
 
 def event_listener(shutting_down, timeout_seconds):
