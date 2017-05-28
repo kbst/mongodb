@@ -109,15 +109,17 @@ def create_users(cluster_object):
 
     admin_credentials = read_secret(
         '{}-admin-credentials'.format(name), namespace)
-    admin_username = str(b64decode(admin_credentials.data['username']))
-    admin_password = str(b64decode(admin_credentials.data['password']))
+    admin_username = b64decode(
+        admin_credentials.data['username']).decode('utf-8')
+    admin_password = b64decode(
+        admin_credentials.data['password']).decode('utf-8')
 
     monitoring_credentials = read_secret(
         '{}-monitoring-credentials'.format(name), namespace)
-    monitoring_username = str(
-        b64decode(monitoring_credentials.data['username']))
-    monitoring_password = str(
-        b64decode(monitoring_credentials.data['password']))
+    monitoring_username = b64decode(
+        monitoring_credentials.data['username']).decode('utf-8')
+    monitoring_password = b64decode(
+        monitoring_credentials.data['password']).decode('utf-8')
 
     mongo_command = '''
         admin = db.getSiblingDB("admin")
