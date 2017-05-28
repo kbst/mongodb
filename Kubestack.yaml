@@ -5,9 +5,9 @@ release_stage: alpha
 
 # Descriptive text.
 description: |-
-  Kubestack helps deploy and run MongoDB on Kubernetes.
-  MongoDB is an open-source, document database designed for ease of development
-  and scaling.
+  The MongoDB operator provides a managed service like experience for MongoDB
+  replica sets on any Kubernetes cluster. MongoDB is an open-source, document
+  database designed for ease of development and scaling.
 
 # List of highlights, must be multiple of 3, best to use 3 or 6
 highlights:
