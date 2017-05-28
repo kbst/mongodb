@@ -22,6 +22,11 @@ def get_random_password():
 def create_admin_secret(cluster_object):
     name = cluster_object['metadata']['name']
     namespace = cluster_object['metadata']['namespace']
+
+    # Check if secret already exists
+    if read_secret('{}-admin-credentials'.format(name), namespace):
+        return False
+
     v1 = client.CoreV1Api()
     body = get_secret_object(
         cluster_object,
@@ -45,6 +50,11 @@ def create_admin_secret(cluster_object):
 def create_monitoring_secret(cluster_object):
     name = cluster_object['metadata']['name']
     namespace = cluster_object['metadata']['namespace']
+
+    # Check if secret already exists
+    if read_secret('{}-monitoring-credentials'.format(name), namespace):
+        return False
+
     v1 = client.CoreV1Api()
     body = get_secret_object(
         cluster_object,
@@ -94,6 +104,11 @@ def get_certificate_authority(name, namespace, suffix='svc.cluster.local'):
 def create_certificate_authority_secret(cluster_object):
     name = cluster_object['metadata']['name']
     namespace = cluster_object['metadata']['namespace']
+
+    # Check if secret already exists
+    if read_secret('{}-ca'.format(name), namespace):
+        return False
+
     v1 = client.CoreV1Api()
     cert_pem, key_pem, csr_pem = get_certificate_authority(name, namespace)
     body = get_secret_object(
@@ -168,6 +183,11 @@ def get_client_certificate(name, namespace, ca_pem, ca_key_pem):
 def create_client_certificate_secret(cluster_object):
     name = cluster_object['metadata']['name']
     namespace = cluster_object['metadata']['namespace']
+
+    # Check if secret already exists
+    if read_secret('{}-client-certificate'.format(name), namespace):
+        return False
+
     v1 = client.CoreV1Api()
     ca_secret = read_secret('{}-ca'.format(name), namespace)
     ca_pem = b64decode(ca_secret.data['ca.pem'])
