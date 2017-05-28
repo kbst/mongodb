@@ -18,6 +18,49 @@
 			"name": "kubestack"
 		}
 	}, {
+		"apiVersion": "extensions/v1beta1",
+		"kind": "Deployment",
+		"metadata": {
+			"labels": {
+				"operator": "mongodb.operator.kubestack.com",
+				"heritage": "kubestack.com"
+			},
+			"name": "mongodb-operator",
+			"namespace": "kubestack"
+		},
+		"spec": {
+			"replicas": 1,
+			"selector": {
+				"matchLabels": {
+					"operator": "mongodb.operator.kubestack.com"
+				}
+			},
+			"template": {
+				"metadata": {
+					"labels": {
+						"operator": "mongodb.operator.kubestack.com",
+						"heritage": "kubestack.com"
+					}
+				},
+				"spec": {
+					"containers": [{
+						"image": "quay.io/kubestack/mongodb-operator:dev",
+						"name": "mongodb-operator",
+						"resources": {
+							"limits": {
+								"cpu": "200m",
+								"memory": "100Mi"
+							},
+							"requests": {
+								"cpu": "100m",
+								"memory": "50Mi"
+							}
+						}
+					}]
+				}
+			}
+		}
+	}, {
 		"apiVersion": "operator.kubestack.com/v1",
 		"kind": "Mongodb",
 		"metadata": {

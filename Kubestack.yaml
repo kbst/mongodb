@@ -66,7 +66,7 @@ readme:
       -
         type: code
         text: |
-            kubectl -n {{ model.items[2].metadata.namespace }} exec -ti {{ model.items[2].metadata.name }}-0 -c mongod \
+            kubectl -n {{ model.items[3].metadata.namespace }} exec -ti {{ model.items[3].metadata.name }}-0 -c mongod \
                 -- mongo --host localhost --ssl \
                     --sslCAFile /etc/ssl/mongod/ca.pem \
                     --sslPEMKeyFile /etc/ssl/mongod/mongod.pem
