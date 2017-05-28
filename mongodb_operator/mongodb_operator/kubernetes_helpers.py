@@ -1,20 +1,22 @@
-import logging, json, random, string
+import logging
+import json
 from time import sleep
 from tempfile import NamedTemporaryFile
 from base64 import b64decode
 
 import delegator
 from kubernetes import client
+from xkcdpass.xkcd_password import generate_wordlist, generate_xkcdpassword
 
 from .kubernetes_resources import (get_default_label_selector,
                                    get_service_object, get_statefulset_object,
                                    get_secret_object)
 
 
-def get_random_password(length=23):
-    chars = string.ascii_letters + string.digits + '!@#$%^&*()'
-    rnd = random.SystemRandom()
-    return ''.join(rnd.choice(chars) for i in range(length))
+def get_random_password():
+    wordlist = generate_wordlist()
+    pw = generate_xkcdpassword(wordlist, delimiter='-')
+    return pw
 
 
 def create_admin_secret(cluster_object):
