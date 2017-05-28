@@ -9,6 +9,7 @@ from .kubernetes_helpers import (create_service, update_service,
                                  delete_service, create_statefulset,
                                  update_statefulset, reap_statefulset,
                                  delete_secret)
+from .mongodb_helpers import check_if_replicaset_needs_setup
 
 
 def periodical_check(shutting_down, sleep_seconds):
@@ -91,7 +92,7 @@ def check_existing():
                 name, namespace)
         except client.rest.ApiException as e:
             if e.status == 404:
-                # Create missing deployment
+                # Create missing statefulset
                 created_statefulset = create_statefulset(cluster_object)
                 if created_statefulset:
                     # Store latest version in cache
@@ -105,6 +106,9 @@ def check_existing():
                 if updated_statefulset:
                     # Store latest version in cache
                     cache_version(updated_statefulset)
+
+        # Check replica set status
+        check_if_replicaset_needs_setup(cluster_object)
 
 
 def collect_garbage():
