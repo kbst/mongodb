@@ -145,7 +145,7 @@ def collect_garbage():
     except client.rest.ApiException as e:
         logging.exception(e)
     else:
-        # Check if deployment belongs to an existing cluster
+        # Check if statefulsets belongs to an existing cluster
         for statefulset in statefulset_list.items:
             name = statefulset.metadata.name
             namespace = statefulset.metadata.namespace
@@ -154,7 +154,7 @@ def collect_garbage():
                 mongodb_tpr_api.read_namespaced_mongodb(name, namespace)
             except client.rest.ApiException as e:
                 if e.status == 404:
-                    # Gracefully delete deployment, replicaset and pods
+                    # Gracefully delete statefulsets and pods
                     reap_statefulset(name, namespace)
                 else:
                     logging.exception(e)
@@ -166,7 +166,7 @@ def collect_garbage():
     except client.rest.ApiException as e:
         logging.exception(e)
     else:
-        # Check if service belongs to an existing cluster
+        # Check if secrets belongs to an existing cluster
         for secret in secret_list.items:
             cluster_name = secret.metadata.labels['cluster']
             secret_name = secret.metadata.name
