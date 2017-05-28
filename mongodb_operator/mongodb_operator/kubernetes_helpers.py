@@ -333,9 +333,10 @@ def delete_statefulset(name, namespace, delete_options=None):
 
 
 def reap_statefulset(name, namespace):
+    corev1api = client.CoreV1Api()
     appsv1beta1api = client.AppsV1beta1Api()
 
-    # First pause and scale down statefulset
+    # Scale down statefulset to 0 replicas
     body = {'spec': {'replicas': 0}}
     try:
         appsv1beta1api.patch_namespaced_stateful_set(
@@ -351,30 +352,22 @@ def reap_statefulset(name, namespace):
             logging.exception(e)
             return False
 
-    # Gracefully wait until scaled down, finally delete StatefulSet
-    statefulset_deleted = False
-    for i in range(5):
-        print('RETRY:', i)
-        # A little back-off before the next try
-        sleep(i * 2)
-
-        try:
-            statefulset = appsv1beta1api.read_namespaced_stateful_set(
-                name, namespace)
-        except client.rest.ApiException as e:
-            if e.status == 404:
-                # StatefulSet does not exist, nothing to delete
-                return True
-            else:
-                logging.exception(e)
-                return False
-        else:
-            print('REPLICAS:', statefulset.status.replicas)
-            if statefulset.status.replicas == 0:
-                # Delete the statefulset
-                statefulset_deleted = delete_statefulset(name, namespace)
-
-        if statefulset_deleted:
+    # Delete statefulset only after all pods have been terminated
+    label_selector = get_default_label_selector(name=name)
+    try:
+        related_pods = corev1api.list_namespaced_pod(
+            namespace, label_selector=label_selector)
+    except client.rest.ApiException as e:
+        logging.exception(e)
+        return False
+    else:
+        if len(related_pods.items) == 0:
+            # Delete the statefulset
+            delete_statefulset(name, namespace)
             return True
-    # If none of the retries succeeded
+
+    # Unless all pods were terminated, we return False
+    # The next GC run will try again
+    msg = 'scaling down statefulset/{} in ns/{}'
+    logging.debug(msg.format(name, namespace))
     return False
