@@ -108,6 +108,10 @@ def create_users(cluster_object):
     client.configuration.assert_hostname = False
     name = cluster_object['metadata']['name']
     namespace = cluster_object['metadata']['namespace']
+    try:
+        replicas = cluster_object['spec']['mongodb']['replicas']
+    except KeyError:
+        replicas = 3
 
     admin_credentials = read_secret(
         '{}-admin-credentials'.format(name), namespace)
@@ -148,26 +152,35 @@ def create_users(cluster_object):
         admin_username, admin_password,
         monitoring_username, monitoring_password)
 
-    pod_name = '{}-0'.format(name)
-    exec_cmd = [
-        'mongo',
-        'localhost:27017/admin',
-        '--ssl',
-        '--sslCAFile', '/etc/ssl/mongod/ca.pem',
-        '--sslPEMKeyFile', '/etc/ssl/mongod/mongod.pem',
-        '--eval', '{}'.format(mongo_command)]
-    exec_resp = v1.connect_get_namespaced_pod_exec(
-        pod_name,
-        namespace,
-        command=exec_cmd,
-        container='mongod',
-        stderr=True,
-        stdin=False,
-        stdout=True,
-        tty=False)
+    for i in range(replicas):
+        pod_name = '{}-{}'.format(name, i)
+        exec_cmd = [
+            'mongo',
+            'localhost:27017/admin',
+            '--ssl',
+            '--sslCAFile', '/etc/ssl/mongod/ca.pem',
+            '--sslPEMKeyFile', '/etc/ssl/mongod/mongod.pem',
+            '--eval', '{}'.format(mongo_command)]
+        exec_resp = v1.connect_get_namespaced_pod_exec(
+            pod_name,
+            namespace,
+            command=exec_cmd,
+            container='mongod',
+            stderr=True,
+            stdin=False,
+            stdout=True,
+            tty=False)
 
-    if 'Successfully added user: {' in exec_resp:
-        logging.info('created users for {} in ns/{}'.format(name, namespace))
-    else:
-        logging.error('error creating users for {} in ns/{}\n{}'.format(
-            name, namespace, exec_resp))
+        if 'Successfully added user: {' in exec_resp:
+            logging.info('created users for {} in ns/{}'.format(
+                name, namespace))
+            return True
+        elif "Error: couldn't add user: not master :" in exec_resp:
+            # most of the time member-0 is elected master
+            # if it is not we get this error and need to
+            # loop through members until we find the master
+            continue
+        else:
+            logging.error('error creating users for {} in ns/{}\n{}'.format(
+                name, namespace, exec_resp))
+        return False
