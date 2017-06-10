@@ -17,7 +17,6 @@ def get_member_hostname(member_id, cluster_name, namespace, dns_suffix):
 
 def check_if_replicaset_needs_setup(cluster_object, dns_suffix=DNS_SUFFIX):
     v1 = client.CoreV1Api()
-    client.configuration.assert_hostname = False
     name = cluster_object['metadata']['name']
     namespace = cluster_object['metadata']['namespace']
 
@@ -52,7 +51,6 @@ def check_if_replicaset_needs_setup(cluster_object, dns_suffix=DNS_SUFFIX):
 
 def initiate_replicaset(cluster_object, dns_suffix=DNS_SUFFIX):
     v1 = client.CoreV1Api()
-    client.configuration.assert_hostname = False
     name = cluster_object['metadata']['name']
     namespace = cluster_object['metadata']['namespace']
     try:
@@ -105,7 +103,6 @@ def initiate_replicaset(cluster_object, dns_suffix=DNS_SUFFIX):
 
 def create_users(cluster_object):
     v1 = client.CoreV1Api()
-    client.configuration.assert_hostname = False
     name = cluster_object['metadata']['name']
     namespace = cluster_object['metadata']['namespace']
     try:
