@@ -1,17 +1,13 @@
 [[source]]
-
 url = "https://pypi.python.org/simple"
 verify_ssl = true
 
-
 [dev-packages]
-
 nose = "*"
-"flake8" = "*"
-
+flake8 = "*"
 
 [packages]
-
 kubernetes = "*"
 docopt = "*"
 "delegator.py" = "*"
+xkcdpass = "*"

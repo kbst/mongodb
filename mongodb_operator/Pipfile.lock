@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "992b94f9305bd4df86706171c9786b414fe3fc804df11f6ecddb818104522a8e"
+            "sha256": "e9da30857640595dad27cc607618ffb5f054a8e11bafe9551d49036d81330057"
         },
         "host-environment-markers": {
             "implementation_name": "cpython",
@@ -9,9 +9,9 @@
             "os_name": "posix",
             "platform_machine": "x86_64",
             "platform_python_implementation": "CPython",
-            "platform_release": "4.13.13-300.fc27.x86_64",
+            "platform_release": "4.14.13-300.fc27.x86_64",
             "platform_system": "Linux",
-            "platform_version": "#1 SMP Wed Nov 15 15:47:50 UTC 2017",
+            "platform_version": "#1 SMP Thu Jan 11 04:00:01 UTC 2018",
             "python_full_version": "3.5.4",
             "python_version": "3.5",
             "sys_platform": "linux"
@@ -35,10 +35,10 @@
         },
         "certifi": {
             "hashes": [
-                "sha256:244be0d93b71e93fc0a0a479862051414d0e00e16435707e5bf5000f92e04694",
-                "sha256:5ec74291ca1136b40f0379e1128ff80e866597e4e2c1e755739a913bbc3613c0"
+                "sha256:14131608ad2fd56836d33a71ee60fa1c82bc9d2c8d98b7bdbc631fe1b3cd1296",
+                "sha256:edbc3f203427eef571f79a7692bb160a2b0f7ccaa31953e99bd17e307cf63f7d"
             ],
-            "version": "==2017.11.5"
+            "version": "==2018.1.18"
         },
         "chardet": {
             "hashes": [
@@ -46,6 +46,13 @@
                 "sha256:84ab92ed1c4d4f16916e05906b6b75a6c0fb5db821cc65e70cbd64a3e2a5eaae"
             ],
             "version": "==3.0.4"
+        },
+        "delegator.py": {
+            "hashes": [
+                "sha256:b2552a818ec078f017688adb2044a86514d014d5854e5ac641ad614c357fa60b",
+                "sha256:27eb1585935ee5dd297a133bf0d91edb4fe84cc5615750fbfbcd6222cc66cc2b"
+            ],
+            "version": "==0.0.14"
         },
         "docopt": {
             "hashes": [
@@ -55,10 +62,10 @@
         },
         "google-auth": {
             "hashes": [
-                "sha256:bb2518ee45fa184678e0d6424215c67b5c2ea46e5093ecc05b063b9f4a894b99",
-                "sha256:7170435cf6aa451be7e96120b9e37e8dbc59d3e8f3bab5b57a8fabbb29bf3810"
+                "sha256:5601c86d6fb07e87a3fbc6d1fcdab560c1bdd8c163604ce90ec3245d6c508bb2",
+                "sha256:d119b5954393d81c4a986ab420cf2c8129fc95ff5c4c6bb8ab5c8f3e6446394f"
             ],
-            "version": "==1.2.1"
+            "version": "==1.3.0"
         },
         "idna": {
             "hashes": [
@@ -69,10 +76,9 @@
         },
         "ipaddress": {
             "hashes": [
-                "sha256:d34cf15d95ce9a734560f7400a8bd2ac2606f378e2a1d0eadbf1c98707e7c74a",
-                "sha256:5d8534c8e185f2d8a1fda1ef73f2c8f4b23264e8e30063feeb9511d492a413e1"
+                "sha256:200d8686011d470b5e4de207d803445deee427455cd0cb7c982b68cf82524f81"
             ],
-            "version": "==1.0.18"
+            "version": "==1.0.19"
         },
         "kubernetes": {
             "hashes": [
@@ -86,6 +92,20 @@
                 "sha256:ce57b501e906ff4f614e71c36a3ab9eacbb96d35c24d1970d2539bbc3ec70ce1"
             ],
             "version": "==2.0.6"
+        },
+        "pexpect": {
+            "hashes": [
+                "sha256:144939a072a46d32f6e5ecc866509e1d613276781f7182148a08df52eaa7b022",
+                "sha256:8e287b171dbaf249d0b06b5f2e88cb7e694651d2d0b8c15bccb83170d3c55575"
+            ],
+            "version": "==4.3.1"
+        },
+        "ptyprocess": {
+            "hashes": [
+                "sha256:e8c43b5eee76b2083a9badde89fd1bbce6c8942d1045146e100b7b5e014f4f1a",
+                "sha256:e64193f0047ad603b71f202332ab5527c5e52aa7c8b609704fc28c0dc20c4365"
+            ],
+            "version": "==0.5.2"
         },
         "pyasn1": {
             "hashes": [
@@ -187,6 +207,12 @@
                 "sha256:40ac14a0c54e14d22809a5c8d553de5a2ae45de3c60105fae53bcb281b3fe6fb"
             ],
             "version": "==0.40.0"
+        },
+        "xkcdpass": {
+            "hashes": [
+                "sha256:718904ba3b018c42859f961adabbca299beb15a8bbe5b824a919490512751d7e"
+            ],
+            "version": "==1.14.3"
         }
     },
     "develop": {
