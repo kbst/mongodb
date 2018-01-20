@@ -1,8 +1,4 @@
-FROM python:3.5
-RUN echo 'debconf debconf/frontend select Noninteractive' \
-    | debconf-set-selections \
-    && apt-get update -qq \
-    && apt-get upgrade -y
+FROM python:3.5 AS builder
 
 ENV PYTHONUNBUFFERED 1
 
@@ -22,6 +18,15 @@ ADD https://pkg.cfssl.org/R1.2/cfssl_linux-amd64 /opt/mongodb_operator/cfssl
 RUN chmod +x /opt/mongodb_operator/cfssl
 
 RUN pip install pipenv \
-    && pipenv install
+    && pipenv install \
+    && ln -s `pipenv --py` /root/.local/share/virtualenvs/python
 
-ENTRYPOINT ["pipenv", "run", "python", "mongodb_operator.py"]
+FROM python:3.5-slim
+
+COPY --from=builder /root/.local/share/virtualenvs /root/.local/share/virtualenvs
+COPY --from=builder /opt/mongodb_operator /opt/mongodb_operator
+
+WORKDIR /opt/mongodb_operator
+ENV PATH /root/.local/share/virtualenvs:$PATH
+
+ENTRYPOINT ["python", "mongodb_operator.py"]
