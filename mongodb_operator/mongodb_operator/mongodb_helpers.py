@@ -97,6 +97,7 @@ def initiate_replicaset(cluster_object, dns_suffix=DNS_SUFFIX):
          '"codeName" : "NodeNotFound"' in exec_resp:
         logging.info('waiting for {} {} replicaset members in ns/{}'.format(
             replicas, name, namespace))
+        logging.debug(exec_resp)
     else:
         logging.error('error initializing replicaset {} in ns/{}\n{}'.format(
             name, namespace, exec_resp))

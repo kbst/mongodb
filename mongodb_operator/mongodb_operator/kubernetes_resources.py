@@ -110,6 +110,12 @@ def get_statefulset_object(cluster_object):
             'cpu': mongodb_limit_cpu, 'memory': mongodb_limit_memory})
     mongodb_container = client.V1Container(
         name='mongod',
+        env=[client.V1EnvVar(
+                name='POD_IP',
+                value_from=client.V1EnvVarSource(
+                    field_ref=client.V1ObjectFieldSelector(
+                        api_version='v1',
+                        field_path='status.podIP')))],
         command=[
             'mongod',
             '--auth',
@@ -117,8 +123,9 @@ def get_statefulset_object(cluster_object):
             '--sslMode', 'requireSSL',
             '--clusterAuthMode', 'x509',
             '--sslPEMKeyFile', '/etc/ssl/mongod/mongod.pem',
-            '--sslCAFile', '/etc/ssl/mongod/ca.pem'],
-        image='mongo:3.4.1',
+            '--sslCAFile', '/etc/ssl/mongod/ca.pem',
+            '--bind_ip', '127.0.0.1,$(POD_IP)'],
+        image='mongo:3.6.4',
         ports=[mongodb_port],
         volume_mounts=[mongodb_tls_volumemount, mongodb_data_volumemount],
         resources=mongodb_resources)
