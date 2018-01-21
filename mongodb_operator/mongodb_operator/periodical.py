@@ -3,9 +3,10 @@ from time import sleep
 
 from kubernetes import client
 
-from .mongodb_tpr_v1alpha1_api import MongoDBThirdPartyResourceV1Alpha1Api
 from .kubernetes_resources import get_default_label_selector
-from .kubernetes_helpers import (create_service, update_service,
+from .kubernetes_helpers import (list_cluster_mongodb_object,
+                                 get_namespaced_mongodb_object,
+                                 create_service, update_service,
                                  delete_service, create_statefulset,
                                  update_statefulset, reap_statefulset,
                                  delete_secret)
@@ -51,24 +52,23 @@ def cache_version(resource):
 
 
 def check_existing():
-    mongodb_tpr_api = MongoDBThirdPartyResourceV1Alpha1Api()
     try:
-        cluster_list = mongodb_tpr_api.list_mongodb_for_all_namespaces()
+        cluster_list = list_cluster_mongodb_object()
     except client.rest.ApiException as e:
         # If for any reason, k8s api gives us an error here, there is
         # nothing for us to do but retry later
         logging.exception(e)
         return False
 
-    v1 = client.CoreV1Api()
-    appsv1beta1api = client.AppsV1beta1Api()
+    core_api = client.CoreV1Api()
+    apps_api = client.AppsV1beta2Api()
     for cluster_object in cluster_list['items']:
         name = cluster_object['metadata']['name']
         namespace = cluster_object['metadata']['namespace']
 
         # Check service exists
         try:
-            service = v1.read_namespaced_service(name, namespace)
+            service = core_api.read_namespaced_service(name, namespace)
         except client.rest.ApiException as e:
             if e.status == 404:
                 # Create missing service
@@ -88,7 +88,7 @@ def check_existing():
 
         # Check statefulset exists
         try:
-            statefulset = appsv1beta1api.read_namespaced_stateful_set(
+            statefulset = apps_api.read_namespaced_stateful_set(
                 name, namespace)
         except client.rest.ApiException as e:
             if e.status == 404:
@@ -112,14 +112,13 @@ def check_existing():
 
 
 def collect_garbage():
-    mongodb_tpr_api = MongoDBThirdPartyResourceV1Alpha1Api()
-    v1 = client.CoreV1Api()
-    appsv1beta1api = client.AppsV1beta1Api()
+    core_api = client.CoreV1Api()
+    apps_api = client.AppsV1beta2Api()
     label_selector = get_default_label_selector()
 
     # Find all services that match our labels
     try:
-        service_list = v1.list_service_for_all_namespaces(
+        service_list = core_api.list_service_for_all_namespaces(
             label_selector=label_selector)
     except client.rest.ApiException as e:
         logging.exception(e)
@@ -130,7 +129,7 @@ def collect_garbage():
             namespace = service.metadata.namespace
 
             try:
-                mongodb_tpr_api.read_namespaced_mongodb(name, namespace)
+                get_namespaced_mongodb_object(name, namespace)
             except client.rest.ApiException as e:
                 if e.status == 404:
                     # Delete service
@@ -140,7 +139,7 @@ def collect_garbage():
 
     # Find all statefulsets that match our labels
     try:
-        statefulset_list = appsv1beta1api.list_stateful_set_for_all_namespaces(
+        statefulset_list = apps_api.list_stateful_set_for_all_namespaces(
             label_selector=label_selector)
     except client.rest.ApiException as e:
         logging.exception(e)
@@ -151,7 +150,7 @@ def collect_garbage():
             namespace = statefulset.metadata.namespace
 
             try:
-                mongodb_tpr_api.read_namespaced_mongodb(name, namespace)
+                get_namespaced_mongodb_object(name, namespace)
             except client.rest.ApiException as e:
                 if e.status == 404:
                     # Gracefully delete statefulsets and pods
@@ -161,7 +160,7 @@ def collect_garbage():
 
     # Find all secrets that match our labels
     try:
-        secret_list = v1.list_secret_for_all_namespaces(
+        secret_list = core_api.list_secret_for_all_namespaces(
             label_selector=label_selector)
     except client.rest.ApiException as e:
         logging.exception(e)
@@ -173,7 +172,7 @@ def collect_garbage():
             namespace = secret.metadata.namespace
 
             try:
-                mongodb_tpr_api.read_namespaced_mongodb(
+                get_namespaced_mongodb_object(
                     cluster_name, namespace)
             except client.rest.ApiException as e:
                 if e.status == 404:

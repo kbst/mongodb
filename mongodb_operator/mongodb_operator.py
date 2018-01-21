@@ -25,6 +25,7 @@ from sys import exit
 
 from docopt import docopt
 from kubernetes import config
+from kubernetes.client import Configuration
 
 from mongodb_operator.periodical import periodical_check
 from mongodb_operator.events import event_listener
@@ -35,6 +36,11 @@ class MongoDBOperator(object):
     def __init__(self):
         self.shutting_down = threading.Event()
         config.load_incluster_config()
+        # Disabling host name validation is unfortunately required for exec
+        # with the python k8s client version 4.0.0
+        c = Configuration()
+        c.assert_hostname = False
+        Configuration.set_default(c)
 
         self.periodic_check_thread = threading.Thread(
             name='PeriodicCheck',

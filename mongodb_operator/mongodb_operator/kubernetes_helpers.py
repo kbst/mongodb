@@ -12,6 +12,27 @@ from .kubernetes_resources import (get_default_label_selector,
                                    get_secret_object)
 
 
+def list_cluster_mongodb_object(**kwargs):
+    custom_object_api = client.CustomObjectsApi()
+    cluster_list = custom_object_api.list_cluster_custom_object(
+        'kubestack.com',
+        'v1',
+        'mongodbs',
+        **kwargs)
+    return cluster_list
+
+
+def get_namespaced_mongodb_object(name, namespace):
+    custom_object_api = client.CustomObjectsApi()
+    cluster = custom_object_api.get_namespaced_custom_object(
+        'kubestack.com',
+        'v1',
+        namespace,
+        'mongodbs',
+        name)
+    return cluster
+
+
 def get_random_password():
     wordlist = generate_wordlist()
     pw = generate_xkcdpassword(wordlist, delimiter='-')

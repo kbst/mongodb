@@ -3,8 +3,8 @@ from time import sleep
 
 from kubernetes import watch
 
-from .mongodb_tpr_v1alpha1_api import MongoDBThirdPartyResourceV1Alpha1Api
-from .kubernetes_helpers import (create_admin_secret, create_monitoring_secret,
+from .kubernetes_helpers import (list_cluster_mongodb_object,
+                                 create_admin_secret, create_monitoring_secret,
                                  create_certificate_authority_secret,
                                  create_client_certificate_secret,
                                  delete_secret, create_service, delete_service,
@@ -13,13 +13,12 @@ from .kubernetes_helpers import (create_admin_secret, create_monitoring_secret,
 
 def event_listener(shutting_down, timeout_seconds):
     logging.info('thread started')
-    mongodb_tpr_api = MongoDBThirdPartyResourceV1Alpha1Api()
     event_watch = watch.Watch()
     while not shutting_down.isSet():
         try:
             for event in event_watch.stream(
-                    mongodb_tpr_api.list_mongodb_for_all_namespaces,
-                    timeout_seconds=timeout_seconds):
+                    list_cluster_mongodb_object,
+                    _request_timeout=timeout_seconds):
 
                 event_switch(event)
         except Exception as e:
