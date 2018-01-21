@@ -8,7 +8,7 @@ from .kubernetes_helpers import (list_cluster_mongodb_object,
                                  create_certificate_authority_secret,
                                  create_client_certificate_secret,
                                  delete_secret, create_service, delete_service,
-                                 create_statefulset, reap_statefulset)
+                                 create_statefulset, delete_statefulset)
 
 
 def event_listener(shutting_down, timeout_seconds):
@@ -72,7 +72,7 @@ def delete(cluster_object):
     delete_service(name, namespace)
 
     # Gracefully delete statefulset and pods
-    reap_statefulset(name, namespace)
+    delete_statefulset(name, namespace)
 
     # Delete cluster credentials
     delete_secret('{}-ca'.format(name), namespace)

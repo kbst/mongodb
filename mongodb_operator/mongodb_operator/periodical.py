@@ -8,7 +8,7 @@ from .kubernetes_helpers import (list_cluster_mongodb_object,
                                  get_namespaced_mongodb_object,
                                  create_service, update_service,
                                  delete_service, create_statefulset,
-                                 update_statefulset, reap_statefulset,
+                                 update_statefulset, delete_statefulset,
                                  delete_secret)
 from .mongodb_helpers import check_if_replicaset_needs_setup
 
@@ -154,7 +154,7 @@ def collect_garbage():
             except client.rest.ApiException as e:
                 if e.status == 404:
                     # Gracefully delete statefulsets and pods
-                    reap_statefulset(name, namespace)
+                    delete_statefulset(name, namespace)
                 else:
                     logging.exception(e)
 

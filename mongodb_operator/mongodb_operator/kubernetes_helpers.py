@@ -352,12 +352,13 @@ def update_statefulset(cluster_object):
 
 
 def delete_statefulset(name, namespace, delete_options=None):
-    appsv1beta1api = client.AppsV1beta1Api()
+    apps_api = client.AppsV1beta1Api()
     if not delete_options:
-        delete_options = client.V1DeleteOptions()
+        delete_options = client.V1DeleteOptions(
+            propagation_policy='Background')
     try:
-        appsv1beta1api.delete_namespaced_stateful_set(
-            name, namespace, delete_options, orphan_dependents=False)
+        apps_api.delete_namespaced_stateful_set(
+            name, namespace, delete_options)
     except client.rest.ApiException as e:
         if e.status == 404:
             # StatefulSet does not exist, nothing to delete but
@@ -373,44 +374,3 @@ def delete_statefulset(name, namespace, delete_options=None):
         logging.info('deleted statefulset/{} from ns/{}'.format(
             name, namespace))
         return True
-
-
-def reap_statefulset(name, namespace):
-    corev1api = client.CoreV1Api()
-    appsv1beta1api = client.AppsV1beta1Api()
-
-    # Scale down statefulset to 0 replicas
-    body = {'spec': {'replicas': 0}}
-    try:
-        appsv1beta1api.patch_namespaced_stateful_set(
-            name, namespace, body)
-    except client.rest.ApiException as e:
-        if e.status == 404:
-            # StatefulSet does not exist, nothing to gracefully delete
-            msg = 'can not delete nonexistent statefulset/{} from ns/{}'
-            logging.debug(msg.format(name, namespace))
-            return True
-        else:
-            # Unexpected exception, stop reaping
-            logging.exception(e)
-            return False
-
-    # Delete statefulset only after all pods have been terminated
-    label_selector = get_default_label_selector(name=name)
-    try:
-        related_pods = corev1api.list_namespaced_pod(
-            namespace, label_selector=label_selector)
-    except client.rest.ApiException as e:
-        logging.exception(e)
-        return False
-    else:
-        if len(related_pods.items) == 0:
-            # Delete the statefulset
-            delete_statefulset(name, namespace)
-            return True
-
-    # Unless all pods were terminated, we return False
-    # The next GC run will try again
-    msg = 'scaling down statefulset/{} in ns/{}'
-    logging.debug(msg.format(name, namespace))
-    return False
