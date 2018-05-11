@@ -2,7 +2,8 @@ import logging
 import json
 from base64 import b64decode
 
-from kubernetes import client
+from kubernetes.client.apis import core_v1_api
+from kubernetes.stream import stream
 
 from .kubernetes_helpers import read_secret
 
@@ -16,7 +17,7 @@ def get_member_hostname(member_id, cluster_name, namespace, dns_suffix):
 
 
 def check_if_replicaset_needs_setup(cluster_object, dns_suffix=DNS_SUFFIX):
-    v1 = client.CoreV1Api()
+    core_api = core_v1_api.CoreV1Api()
     name = cluster_object['metadata']['name']
     namespace = cluster_object['metadata']['namespace']
 
@@ -28,7 +29,7 @@ def check_if_replicaset_needs_setup(cluster_object, dns_suffix=DNS_SUFFIX):
         '--sslCAFile', '/etc/ssl/mongod/ca.pem',
         '--sslPEMKeyFile', '/etc/ssl/mongod/mongod.pem',
         '--eval', 'rs.status()']
-    exec_resp = v1.connect_get_namespaced_pod_exec(
+    exec_resp = stream(core_api.connect_get_namespaced_pod_exec,
         pod_name,
         namespace,
         command=exec_cmd,
@@ -50,7 +51,7 @@ def check_if_replicaset_needs_setup(cluster_object, dns_suffix=DNS_SUFFIX):
 
 
 def initiate_replicaset(cluster_object, dns_suffix=DNS_SUFFIX):
-    v1 = client.CoreV1Api()
+    core_api = core_v1_api.CoreV1Api()
     name = cluster_object['metadata']['name']
     namespace = cluster_object['metadata']['namespace']
     try:
@@ -79,7 +80,7 @@ def initiate_replicaset(cluster_object, dns_suffix=DNS_SUFFIX):
         '--sslCAFile', '/etc/ssl/mongod/ca.pem',
         '--sslPEMKeyFile', '/etc/ssl/mongod/mongod.pem',
         '--eval', 'rs.initiate({})'.format(json.dumps(_rs_config))]
-    exec_resp = v1.connect_get_namespaced_pod_exec(
+    exec_resp = stream(core_api.connect_get_namespaced_pod_exec,
         pod_name,
         namespace,
         command=exec_cmd,
@@ -96,13 +97,14 @@ def initiate_replicaset(cluster_object, dns_suffix=DNS_SUFFIX):
          '"codeName" : "NodeNotFound"' in exec_resp:
         logging.info('waiting for {} {} replicaset members in ns/{}'.format(
             replicas, name, namespace))
+        logging.debug(exec_resp)
     else:
         logging.error('error initializing replicaset {} in ns/{}\n{}'.format(
             name, namespace, exec_resp))
 
 
 def create_users(cluster_object):
-    v1 = client.CoreV1Api()
+    core_api = core_v1_api.CoreV1Api()
     name = cluster_object['metadata']['name']
     namespace = cluster_object['metadata']['namespace']
     try:
@@ -158,7 +160,7 @@ def create_users(cluster_object):
             '--sslCAFile', '/etc/ssl/mongod/ca.pem',
             '--sslPEMKeyFile', '/etc/ssl/mongod/mongod.pem',
             '--eval', '{}'.format(mongo_command)]
-        exec_resp = v1.connect_get_namespaced_pod_exec(
+        exec_resp = stream(core_api.connect_get_namespaced_pod_exec,
             pod_name,
             namespace,
             command=exec_cmd,
