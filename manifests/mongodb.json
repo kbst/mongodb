@@ -136,8 +136,8 @@
 		"spec": {
 			"mongodb": {
 				"replicas": 3,
-				"mongodb_limit_cpu": "100m",
-				"mongodb_limit_memory": "64Mi"
+				"mongodb_limit_cpu": "500m",
+				"mongodb_limit_memory": "256Mi"
 			}
 		}
 	}]
