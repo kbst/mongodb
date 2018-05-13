@@ -1,0 +1,66 @@
+sudo: required
+
+addons:
+  apt:
+    packages:
+      - docker-ce
+
+services:
+- docker
+
+language: python
+
+stages:
+- build image
+- test
+
+env:
+- K8S_VERSION=v1.7.5
+- K8S_VERSION=v1.9.4
+- K8S_VERSION=v1.10.0
+
+jobs:
+  include:
+    - stage: build image
+      env:
+      install:
+      - docker build -t kbstci/mongodb:$TRAVIS_COMMIT mongodb_operator/
+      - docker images
+      script:
+      - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+      - docker push kbstci/mongodb:$TRAVIS_COMMIT
+
+install:
+# Download kubectl
+- curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/$K8S_VERSION/bin/linux/amd64/kubectl && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
+# Download minikube
+- curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
+- CHANGE_MINIKUBE_NONE_USER=true sudo minikube start --vm-driver=none --bootstrapper=localkube --extra-config=apiserver.authorization-mode=RBAC --kubernetes-version=$K8S_VERSION
+# Set kubectl context
+- CHANGE_MINIKUBE_NONE_USER=true minikube update-context
+# Wait for Kubernetes to be up
+- JSONPATH='{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}'; until kubectl get nodes -o jsonpath="$JSONPATH" 2>&1 | grep -q "Ready=True"; do kubectl get nodes && sleep 1; done
+- kubectl get nodes
+# Replace default image tag with CI tag
+- sed -i "s/kubestack\/mongodb:latest/kbstci\/mongodb:$TRAVIS_COMMIT/" manifests/mongodb.json
+# Apply CRD, RBAC, Operator and CO
+- until kubectl get mongodb mongo; do kubectl apply -f manifests/mongodb.json; done
+script:
+# Wait until operator is deployed
+- JSONPATH='{range .items[*]}{@.metadata.namespace}/{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}'; until kubectl get pod -n kubestack -l operator=mongodb.operator.kubestack.com -o jsonpath="$JSONPATH" | grep -q "Ready=True"; do kubectl get pod -n kubestack -l operator=mongodb.operator.kubestack.com && sleep 1; done
+- kubectl get pod -n kubestack -l operator=mongodb.operator.kubestack.com
+# Print operator logs
+- sleep 5 && kubectl -n kubestack logs -l operator=mongodb.operator.kubestack.com
+# Wait until all operated pods are up
+- JSONPATH='{range .items[*]}{range @.status.conditions[*]}{@.type}={@.status};{end}'; until kubectl get pod -n default -l operated-by=mongodb.operator.kubestack.com -o jsonpath="$JSONPATH" | grep -q "Initialized=True;Ready=True;PodScheduled=True;Initialized=True;Ready=True;PodScheduled=True;Initialized=True;Ready=True;PodScheduled=True;"; do kubectl get pod -n default -l operated-by=mongodb.operator.kubestack.com && sleep 1; done
+- kubectl get pod -n default -l operated-by=mongodb.operator.kubestack.com
+# Print operator logs
+- sleep 5 && kubectl -n kubestack logs -l operator=mongodb.operator.kubestack.com
+# Delete mongodb custom object
+- kubectl delete mongodb mongo
+# Print operator logs
+- sleep 5 && kubectl -n kubestack logs -l operator=mongodb.operator.kubestack.com
+# Wait until all pods are deleted
+- JSONPATH='{@.items}'; until kubectl -n default get pod -l operated-by=mongodb.operator.kubestack.com -o jsonpath="$JSONPATH" | grep -q "\[\]"; do sleep 1; done
+# Print operator logs
+- sleep 5 && kubectl -n kubestack logs -l operator=mongodb.operator.kubestack.com
