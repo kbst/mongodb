@@ -66,6 +66,12 @@ def get_statefulset_object(cluster_object):
     except KeyError:
         mongodb_limit_memory = '64Mi'
 
+    try:
+        hard_pod_anti_affinity = \
+            cluster_object['spec']['mongodb']['hard_pod_anti_affinity']
+    except KeyError:
+        hard_pod_anti_affinity = True
+
     statefulset = client.V1beta1StatefulSet()
 
     # Metadata
@@ -84,16 +90,29 @@ def get_statefulset_object(cluster_object):
         labels=get_default_labels(name=name))
 
     statefulset.spec.template.spec = client.V1PodSpec(containers=[])
+
+    pod_affinity_term = client.V1PodAffinityTerm(
+        topology_key='kubernetes.io/hostname',
+        label_selector=client.V1LabelSelector(
+            match_expressions=[client.V1LabelSelectorRequirement(
+                key='cluster',
+                operator='In',
+                values=[name])]))
+
+    pod_anti_affinity = client.V1PodAntiAffinity(
+        required_during_scheduling_ignored_during_execution=[
+            pod_affinity_term])
+
+    if not hard_pod_anti_affinity:
+        pod_anti_affinity = client.V1PodAntiAffinity(
+            preferred_during_scheduling_ignored_during_execution=[
+                client.V1WeightedPodAffinityTerm(
+                    weight=100,
+                    pod_affinity_term=pod_affinity_term)])
+
     statefulset.spec.template.spec.affinity = client.V1Affinity(
-        pod_anti_affinity=client.V1PodAntiAffinity(
-            required_during_scheduling_ignored_during_execution=[
-                client.V1PodAffinityTerm(
-                    topology_key='kubernetes.io/hostname',
-                    label_selector=client.V1LabelSelector(
-                        match_expressions=[client.V1LabelSelectorRequirement(
-                            key='cluster',
-                            operator='In',
-                            values=[name])]))]))
+        pod_anti_affinity=pod_anti_affinity)
+
     # MongoDB container
     mongodb_port = client.V1ContainerPort(
         name='mongodb', container_port=27017, protocol='TCP')
